@@ -1,0 +1,5 @@
+plot-world-name: plotworld
+challengeOngoing: false
+reward-commands:
+  - eco give %player% 20000
+

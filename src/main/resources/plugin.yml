@@ -1,0 +1,14 @@
+name: HauntedHousePlugin
+version: '${project.version}'
+main: me.gibson.hauntedhouseplugin.HauntedHousePlugin
+api-version: '1.20'
+depend: [PlotSquared]
+commands:
+  hauntedhouse:
+    description: Controls the Haunted House challenge
+    usage: /<command> <action>
+    aliases: [hh, haunted]
+permissions:
+  hauntedhouse.reload:
+    description: Allows reloading of the HauntedHouse configuration.
+    default: op
