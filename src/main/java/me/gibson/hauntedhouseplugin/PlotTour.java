@@ -36,11 +36,20 @@ public class PlotTour {
         plotTourTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             if (currentPlotIndex < allPlots.size()) {
                 Plot currentPlot = allPlots.get(currentPlotIndex);
-                //TODO: get Plot center?
-                Location plotCenter = currentPlot.getCenter(location -> location.getWorld().getName().equalsIgnoreCase(plugin.plotWorldName));
+
+                // Get the bottom and top corners
+                com.plotsquared.core.location.Location bottom = currentPlot.getBottom();
+                com.plotsquared.core.location.Location top = currentPlot.getTop();
+
+                // Calculate the center along X and the front edge along Z
+                double centerX = (bottom.getX() + top.getX()) / 2.0;
+                double frontZ = top.getZ() + 1; // One block outside the plot boundary
+
+                Location frontOfPlot = new Location(Bukkit.getWorld(plugin.plotWorldName), centerX, Bukkit.getWorld(plugin.plotWorldName).getHighestBlockYAt((int)centerX, (int)frontZ), frontZ);
+
 
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    player.teleport(plotCenter);
+                    player.teleport(frontOfPlot);
                     player.sendMessage(PREFIX + "Now visiting " + currentPlot.getOwner() + "'s plot!");
                 }
 
