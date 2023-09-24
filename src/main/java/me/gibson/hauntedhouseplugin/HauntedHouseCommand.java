@@ -137,44 +137,29 @@ public class HauntedHouseCommand implements CommandExecutor, Listener, TabComple
                 sender.sendMessage(PREFIX + ChatColor.GREEN + "Configuration reloaded successfully!");
                 break;
 
-            case "vote":
+              case "vote":
+                if (!challengeOngoing) {
+                    sender.sendMessage(PREFIX + "The challenge isn't ongoing!");
+                    return;
+                }
+
                 if (!(sender instanceof Player)) {
-                    sender.sendMessage(PREFIX + ChatColor.RED + "Only players can vote!");
+                    sender.sendMessage(PREFIX + "Only players can vote!");
                     return;
                 }
 
-                Player voter = (Player) sender;
-                if (args.length < 2) {
-                    voter.sendMessage(PREFIX + ChatColor.RED + "Usage: /hauntedhouse vote <player_name>");
+                if(!sender.hasPermission("hauntedhouse.vote")) {
+                    sender.sendMessage(PREFIX + "You don't have permission to start a Tour!");
                     return;
                 }
 
-                Player target = Bukkit.getPlayer(args[1]);
-                if (target == null || !target.isOnline()) {
-                    voter.sendMessage(PREFIX + ChatColor.RED + "That player is not online or does not exist.");
-                    return;
-                }
-
-                if (target.getUniqueId().equals(voter.getUniqueId())) {
-                    voter.sendMessage(PREFIX + ChatColor.RED + "You cannot vote for your own plot!");
-                    return;
-                }
-
-                PlotPlayer<?> targetPlotPlayer = PlotPlayer.from(target);
-                Set<Plot> targetPlots = targetPlotPlayer.getPlots();
-
-                if (targetPlots.isEmpty()) {
-                    voter.sendMessage(PREFIX + ChatColor.RED + "That player has not claimed a plot.");
-                    return;
-                }
-
-                if (playerVotes.containsKey(voter.getUniqueId())) {
-                    voter.sendMessage(PREFIX + ChatColor.RED + "You've already voted!");
-                    return;
-                }
-
-                playerVotes.put(voter.getUniqueId(), target.getUniqueId());
-                voter.sendMessage(PREFIX + ChatColor.GREEN + "You've successfully voted for " + target.getName() + "'s haunted house!");
+                PlotTour plotTour = new PlotTour(plugin);
+                  if (!plotTour.isTourOngoing()) {
+                      plotTour.startPlotTour();
+                      sender.sendMessage(PREFIX + "Starting the plot tour. You will be teleported to each participant's plot to cast your vote!");
+                  } else {
+                      sender.sendMessage(PREFIX + "A plot tour is already ongoing. Please wait for it to finish before starting a new one.");
+                  }
                 break;
             case "end":
                 if (!challengeOngoing) {

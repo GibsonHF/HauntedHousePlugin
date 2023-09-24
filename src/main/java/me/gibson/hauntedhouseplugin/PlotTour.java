@@ -1,6 +1,7 @@
 package me.gibson.hauntedhouseplugin;
 
 import com.plotsquared.core.PlotSquared;
+import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
 import org.bukkit.Bukkit;
@@ -21,11 +22,18 @@ public class PlotTour {
 
     private HauntedHousePlugin plugin;
 
+    private boolean isTourOngoing = false;
+
+
     public PlotTour(HauntedHousePlugin plugin) {
         this.plugin = plugin;
     }
 
     public void startPlotTour() {
+        if (isTourOngoing) {
+            return;  // Exit if a tour is already ongoing
+        }
+        isTourOngoing = true;
         for (PlotArea plotArea : PlotSquared.get().getPlotAreaManager().getAllPlotAreas()) {
             if (plotArea.getWorldName().equalsIgnoreCase(plugin.plotWorldName)) {
                 allPlots.addAll(plotArea.getPlots());
@@ -49,18 +57,30 @@ public class PlotTour {
 
 
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    player.teleport(frontOfPlot);
-                    player.sendMessage(PREFIX + "Now visiting " + currentPlot.getOwner() + "'s plot!");
+                    //check if player has a plot meaning in competition to teleport to it
+                    PlotPlayer<?> plotPlayer = PlotSquared.platform().playerManager().getPlayer(player.getUniqueId());
+                    if (plotPlayer != null && !plotPlayer.getPlots().isEmpty()) {
+                        player.teleport(frontOfPlot);
+                        player.sendMessage(PREFIX + "Now visiting " + currentPlot.getOwner() + "'s plot!");
+                    }
                 }
 
                 currentPlotIndex++;
             } else {
                 plotTourTask.cancel();
+                isTourOngoing = false;  // Reset the flag when the tour ends
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    player.sendMessage(PREFIX + "Plot tour has ended!");
+                    //check if player has a plot meaning in competition to teleport to it
+                    PlotPlayer<?> plotPlayer = PlotSquared.platform().playerManager().getPlayer(player.getUniqueId());
+                    if (plotPlayer != null && !plotPlayer.getPlots().isEmpty()) {
+                        player.sendMessage(PREFIX + "The plot tour has ended! You can now cast your votes.");
+                    }
                 }
             }
         }, 0L, 20L * 30);  // runs every minute
     }
 
+    public boolean isTourOngoing() {
+        return isTourOngoing;
+    }
 }
