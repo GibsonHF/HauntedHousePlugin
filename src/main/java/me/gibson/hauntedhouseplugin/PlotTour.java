@@ -4,14 +4,19 @@ import com.plotsquared.core.PlotSquared;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static me.gibson.hauntedhouseplugin.HauntedHousePlugin.PREFIX;
 
@@ -24,6 +29,7 @@ public class PlotTour {
 
     private boolean isTourOngoing = false;
 
+    private final Map<UUID, Plot> playerCurrentPlot = new HashMap<>();
 
     public PlotTour(HauntedHousePlugin plugin) {
         this.plugin = plugin;
@@ -54,14 +60,19 @@ public class PlotTour {
                 double frontZ = top.getZ() + 1; // One block outside the plot boundary
 
                 Location frontOfPlot = new Location(Bukkit.getWorld(plugin.plotWorldName), centerX, Bukkit.getWorld(plugin.plotWorldName).getHighestBlockYAt((int)centerX, (int)frontZ), frontZ);
-
+                frontOfPlot.setYaw(180);  // Face the front of the plot
 
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     //check if player has a plot meaning in competition to teleport to it
                     PlotPlayer<?> plotPlayer = PlotSquared.platform().playerManager().getPlayer(player.getUniqueId());
                     if (plotPlayer != null && !plotPlayer.getPlots().isEmpty()) {
                         player.teleport(frontOfPlot);
-                        player.sendMessage(PREFIX + "Now visiting " + currentPlot.getOwner() + "'s plot!");
+                        player.sendMessage(PREFIX + "Now visiting " + Bukkit.getPlayer(currentPlot.getOwner()).getDisplayName() + "'s plot!");
+                        MiniMessage mini = MiniMessage.miniMessage();
+                        for (int i = 1; i <= 5; i++) {
+                            Component voteMessage = mini.deserialize("<hover:show_text:'<gold><bold>Click to vote: " + i + "'>><click:run_command:/hh rate " + i + "> <aqua><italic>[Vote: " + i + "]</italic></aqua></click></hover> ");
+                            player.sendMessage(voteMessage);
+                        }
                     }
                 }
 
@@ -73,7 +84,7 @@ public class PlotTour {
                     //check if player has a plot meaning in competition to teleport to it
                     PlotPlayer<?> plotPlayer = PlotSquared.platform().playerManager().getPlayer(player.getUniqueId());
                     if (plotPlayer != null && !plotPlayer.getPlots().isEmpty()) {
-                        player.sendMessage(PREFIX + "The plot tour has ended! You can now cast your votes.");
+                        player.sendMessage(PREFIX + "The plot tour has ended!");
                     }
                 }
             }
